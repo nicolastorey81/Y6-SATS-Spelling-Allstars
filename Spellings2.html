@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelling Challenge Deluxe</title>
+
+<style>
+body{
+  margin:0;
+  font-family:"Trebuchet MS", sans-serif;
+  background:linear-gradient(135deg,#ffd6ec,#e5c6ff,#ffc0e6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+.container{
+  width:900px;
+  text-align:center;
+}
+
+h1{
+  font-size:50px;
+  color:white;
+  text-shadow:0 5px 20px rgba(0,0,0,0.25);
+}
+
+.stats{
+  background:rgba(255,255,255,0.75);
+  padding:15px;
+  border-radius:40px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.2);
+  margin-bottom:20px;
+  font-size:18px;
+}
+
+.card{
+  background:rgba(255,255,255,0.75);
+  padding:30px;
+  border-radius:30px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+}
+
+input{
+  width:70%;
+  padding:14px;
+  border-radius:20px;
+  border:none;
+  font-size:18px;
+  margin:15px 0;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,0.1);
+}
+
+button{
+  padding:12px 18px;
+  margin:6px;
+  border:none;
+  border-radius:15px;
+  font-weight:bold;
+  cursor:pointer;
+  color:white;
+  transition:0.2s;
+  box-shadow:0 6px 12px rgba(0,0,0,0.2);
+}
+
+button:hover{transform:translateY(-3px);}
+
+.start{background:#34c759;}
+.stop{background:#ff3b30;}
+.check{background:#5856d6;}
+.speak{background:#ff9500;}
+.music{background:#af52de;}
+.loot{background:#ff9f0a;}
+.boss{background:#ff2d55;}
+
+.feedback{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+  min-height:30px;
+}
+
+.avatar-display{
+  font-size:90px;
+  margin-top:20px;
+  transition:0.4s;
+}
+
+.sparkle{
+  animation:sparkle 0.8s ease;
+}
+
+@keyframes sparkle{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.5);}
+  100%{transform:scale(1);}
+}
+
+.shop, .medals{
+  margin-top:20px;
+}
+
+.avatar-item{
+  display:inline-block;
+  margin:8px;
+  padding:15px;
+  font-size:40px;
+  border-radius:25px;
+  background:rgba(255,255,255,0.6);
+  cursor:pointer;
+  transition:0.3s;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+}
+
+.avatar-item:hover{
+  transform:scale(1.15);
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+.selected{
+  border:4px solid gold;
+}
+
+.locked{
+  opacity:0.3;
+  cursor:not-allowed;
+}
+
+.medal-item{
+  display:inline-block;
+  font-size:35px;
+  margin:6px;
+  padding:10px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.5);
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.medal-item:hover{
+  transform:scale(1.2);
+}
+
+.rarity-common{color:#6b7280;font-size:12px;}
+.rarity-rare{color:#2563eb;font-size:12px;}
+.rarity-legendary{color:#d97706;font-size:12px;font-weight:bold;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Spelling Challenge</h1>
+
+<div class="stats">
+Score: <span id="score">0</span> |
+Coins: 🪙 <span id="coins">0</span> |
+XP: ⭐ <span id="xp">0</span> |
+Level: <span id="level">1</span> |
+Time: <span id="time">60</span>s
+</div>
+
+<div class="card">
+
+<div id="prompt">Press Start to begin!</div>
+
+<input id="userInput" placeholder="Type spelling" disabled>
+
+<br>
+
+<button class="start" onclick="startGame()">Start</button>
+<button class="stop" onclick="stopGame()">Stop</button>
+<button class="speak" onclick="speakWord()">Hear</button>
+<button class="check" onclick="checkSpelling()">Check</button>
+<br>
+<button class="loot" onclick="openLoot()">Mystery Egg (200🪙)</button>
+<button class="boss" onclick="startBoss()">Boss Battle</button>
+
+<div id="feedback" class="feedback"></div>
+
+<div id="avatarDisplay" class="avatar-display">🐻</div>
+
+<h3>🛍 Avatar Shop</h3>
+<div class="shop" id="avatarShop"></div>
+
+<h3>🏅 Medals Library</h3>
+<div class="medals" id="medalLibrary"></div>
+
+</div>
+</div>
+
+<script>
+const WORD_TIME = 60;
+
+/* ===========================
+   FULL WORD LIST (YOUR LIST)
+=========================== */
+const words = [
+"accommodate","accompany","according","achieve","aggressive","amateur","ancient","apparent","appreciate","attached","available","average","awkward","bargain","bruise","category","cemetery","committee","communicate","community","competition","conscience","conscious","controversy","convenience","correspond","criticise","curiosity","definite","desperate","determined","develop","dictionary","disastrous","embarrass","environment","equipment","equipped","especially","exaggerate","excellent","existence","explanation","familiar","foreign","forty","frequently","government","guarantee","harass","hindrance","identity","immediate","immediately","individual","interfere","interrupt","language","leisure","lightning","marvellous","mischievous","muscle","necessary","neighbour","nuisance","occupy","occur","opportunity","parliament","persuade","physical","prejudice","privilege","profession","programme","pronunciation","queue","recognise","recommend","relevant","restaurant","rhyme","rhythm","sacrifice","secretary","shoulder","signature","sincere","sincerely","soldier","stomach","sufficient","suggest","symbol","system","temperature","thorough","twelfth","variety","vegetable","vehicle","yacht","accident","accidentally","actual","actually","address","although","answer","appear","arrive","believe","bicycle","breath","breathe","build","busy","business","calendar","caught","centre","century","certain","circle","complete","consider","continue","decide","describe","different","difficult","disappear","early","earth","eight","eighth","enough","exercise","experience","experiment","extreme","famous","favourite","February","forward","forwards","fruit","grammar","group","guard","guide","heard","heart","height","history","imagine","important","increase","interest","island","knowledge","learn","length","library","material","medicine","mention","minute","natural","naughty","notice","occasion","occasionally","often","opposite","ordinary","particular","peculiar","perhaps","popular","position","possess","possession","possible","potatoes","pressure","probably","promise","purpose","quarter","question","recent","regular","reign","remember","sentence","separate","special","straight","strange","strength","suppose","surprise","therefore","though","thought","through","various","weight","woman","women"
+];
+
+const avatars = [];
+const emojiPool = ["🐻","🐰","🐶","🐱","🐼","🦊","🐸","🐵","🐯","🐮",
+"🐷","🐹","🦄","🐲","🐨","🦁","🐺","🐙","🦋","🐢",
+"🍓","🍎","🍉","🍒","🍰","🧁","🍩","🍭","🍦","🍕",
+"🍔","🍟","🌮","🥞","🍪","🍿","🎂","🎀","💎","✨",
+"🌈","🔥","🌟","👑","🦖","🐉","🛸","🧸","🪄","🧝"];
+
+emojiPool.forEach((e,i)=>{
+  let rarity=i<20?"common":i<35?"rare":"legendary";
+  let price=rarity==="common"?100:rarity==="rare"?300:800;
+  avatars.push({emoji:e,price,rarity});
+});
+
+let score=0,coins=0,xp=0,level=1;
+let currentWord="",timer,timeLeft=WORD_TIME;
+let owned=["🐻"];
+let selected="🐻";
+let medalLibrary=[];
+let bossMode=false;
+
+document.getElementById("userInput").addEventListener("keydown",e=>{
+if(e.key==="Enter") checkSpelling();
+});
+
+function startGame(){
+document.getElementById("userInput").disabled=false;
+nextWord();
+}
+
+function stopGame(){
+clearInterval(timer);
+document.getElementById("userInput").disabled=true;
+document.getElementById("prompt").textContent="Game stopped.";
+}
+
+function nextWord(){
+bossMode=false;
+currentWord=words[Math.floor(Math.random()*words.length)];
+document.getElementById("prompt").textContent="Listen carefully!";
+speakWord();
+startTimer();
+}
+
+function startBoss(){
+bossMode=true;
+currentWord=words[Math.floor(Math.random()*words.length)];
+document.getElementById("prompt").textContent="👑 BOSS WORD!";
+speakWord();
+startTimer();
+}
+
+function startTimer(){
+timeLeft=WORD_TIME;
+clearInterval(timer);
+timer=setInterval(()=>{
+timeLeft--;
+updateStats();
+if(timeLeft<=0){
+clearInterval(timer);
+document.getElementById("feedback").textContent="Time up! Word was "+currentWord;
+setTimeout(nextWord,2000);
+}
+},1000);
+}
+
+function speakWord(){
+const s=new SpeechSynthesisUtterance(currentWord);
+s.lang="en-GB";
+speechSynthesis.speak(s);
+}
+
+function checkSpelling(){
+clearInterval(timer);
+const input=document.getElementById("userInput");
+const ans=input.value.trim().toLowerCase();
+
+if(ans===currentWord){
+score+=10;
+coins+=bossMode?100:25;
+xp+=20;
+input.value="";
+document.getElementById("feedback").textContent="Correct! 🎉";
+}else{
+document.getElementById("feedback").textContent="Incorrect — "+currentWord;
+}
+
+if(xp>=100){
+xp=0;
+level++;
+coins+=50;
+}
+
+updateStats();
+setTimeout(nextWord,1500);
+}
+
+function renderShop(){
+const shop=document.getElementById("avatarShop");
+shop.innerHTML="";
+avatars.forEach(a=>{
+const div=document.createElement("div");
+div.className="avatar-item";
+div.innerHTML=a.emoji+"<br>"+a.price+"🪙<br><span class='rarity-"+a.rarity+"'>"+a.rarity+"</span>";
+
+if(selected===a.emoji) div.classList.add("selected");
+
+if(!owned.includes(a.emoji)){
+if(coins<a.price) div.classList.add("locked");
+div.onclick=()=>buyAvatar(a);
+}else{
+div.onclick=()=>selectAvatar(a.emoji);
+}
+
+shop.appendChild(div);
+});
+}
+
+function buyAvatar(a){
+if(coins>=a.price){
+coins-=a.price;
+owned.push(a.emoji);
+selectAvatar(a.emoji);
+sparkle();
+}
+}
+
+function selectAvatar(newAvatar){
+if(selected!==newAvatar){
+medalLibrary.push(selected);
+}
+selected=newAvatar;
+document.getElementById("avatarDisplay").textContent=newAvatar;
+renderShop();
+renderMedals();
+}
+
+function renderMedals(){
+const lib=document.getElementById("medalLibrary");
+lib.innerHTML="";
+medalLibrary.forEach(m=>{
+const div=document.createElement("div");
+div.className="medal-item";
+div.textContent=m;
+div.onclick=()=>{
+selected=m;
+document.getElementById("avatarDisplay").textContent=m;
+renderShop();
+};
+lib.appendChild(div);
+});
+}
+
+function openLoot(){
+if(coins<200) return alert("Not enough coins!");
+coins-=200;
+const random=avatars[Math.floor(Math.random()*avatars.length)];
+if(!owned.includes(random.emoji)){
+owned.push(random.emoji);
+selectAvatar(random.emoji);
+sparkle();
+}else{
+coins+=100;
+}
+renderShop();
+}
+
+function sparkle(){
+const display=document.getElementById("avatarDisplay");
+display.classList.add("sparkle");
+setTimeout(()=>display.classList.remove("sparkle"),800);
+}
+
+function updateStats(){
+document.getElementById("score").textContent=score;
+document.getElementById("coins").textContent=coins;
+document.getElementById("xp").textContent=xp;
+document.getElementById("level").textContent=level;
+document.getElementById("time").textContent=timeLeft;
+}
+
+renderShop();
+renderMedals();
+updateStats();
+</script>
+
+</body>
+</html>
